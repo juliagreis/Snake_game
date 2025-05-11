@@ -6,7 +6,7 @@ class Screen{
         int largura;
         int altura;
         int **data;
-        int *dataHeight;
+        int *dataHeight;    //????????
 
     public:
         const int FOOD=1, SNAKE=2, EMPTY=3, WALL=4;
@@ -33,4 +33,8 @@ Screen::~Screen(){
 }
 int Screen::get(int linha,int coluna){
     return data[linha][coluna];
+}
+
+void Screen::set(int linha,int coluna,int val){
+    data[linha][coluna]=val;
 }

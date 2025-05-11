@@ -9,7 +9,7 @@ class Snake{
         Node* calda;    //fim
         Node* cabeça;    //cabeca
         int snakeSize;
-        void crescer(int x,int y);
+        void crescer(int x,int y);   //talvez preciso verificar se esta dentro do intervalo
     public:
         Snake(const int& n);
         ~Snake();
@@ -56,3 +56,4 @@ Snake::~Snake(){
     snakeSize=0;
 
 }
+
