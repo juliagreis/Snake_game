@@ -2,7 +2,7 @@
 #include <cstdlib>
 #include <ncurses.h>
 #include <unistd.h>
-#include "Game.hpp"
+#include "Game.h"
 
 using namespace std;
 
