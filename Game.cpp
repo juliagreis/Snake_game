@@ -7,9 +7,9 @@ Game::Game(int alt,int larg,int tamanho_cobra){
     cobra=new Snake(tamanho_cobra);
     cobra->draw(*tela_atual,Screen::SNAKE);
 
-    comidas=new int*[10];  //alocando 10 posicoes(maximo)  [iteracoes][x][y]
+    comidas=new int*[10];  //alocando 10 posicoes(maximo)  
     for(int i=0;i<10;i++)
-        comidas[i]=new int[3]; //iniciando como invalido
+        comidas[i]=new int[3]; //iniciando [iteracoes][pos_x][pos_y]
 
     comidas_ativas=0;
 }
@@ -44,9 +44,10 @@ void Game::addFood(int dr, int dc,int ttl){
 }
 
 void Game::removeComida(int x, int y) {
+    //o objetivo é tornar o acesso ao array comidas o menos custoso possivel
     for (int i = 10 - comidas_ativas; i < 10; ++i) {
         if (comidas[i][1] == x && comidas[i][2] == y) {
-            // Substitui pela última comida ativa
+            //substitui pela última comida ativa
             comidas[i][0] = comidas[10 - comidas_ativas][0];
             comidas[i][1] = comidas[10 - comidas_ativas][1];
             comidas[i][2] = comidas[10 - comidas_ativas][2];
@@ -57,71 +58,75 @@ void Game::removeComida(int x, int y) {
     }
 }
 
-bool Game::step(int dc,int dr){
-    //verificar se é válido o deslocamento que foi solicitado
-    //se sim, chamar o funcao de snake pra andar -> atualizar screen->retornar true
-    //se nao, retornar falso
+bool Game::step(int dr, int dc) {
+    // Verifica se estamos tentando inverter a direção
+    int prevX = cobra->get_posx_prev_cabeca();
+    int prevY = cobra->get_posy_prev_cabeca();
+    int cabecaX = cobra->get_posx_cabeca();
+    int cabecaY = cobra->get_posy_cabeca();
     
-    int novox,novoy;
-    //se tiver querendo andar pra uma posicao inválida
-    if(dr == (cobra->get_posx_prev_cabeca() - cobra->get_posx_cabeca())
-        && (dc == (cobra->get_posy_prev_cabeca() - cobra->get_posy_cabeca()))){    
-        
-    //ignoramos e andamos pra direcao anterior
+    //se estamos tentando ir na direção oposta/invalida, ignoramos
+    if (dr == -1 * (cabecaY - prevY) && dc == -1 * (cabecaX - prevX)) {
+        //segue direção atual
+        dr = cabecaY - prevY;
+        dc = cabecaX - prevX;
+    }
     
-        //fluxo normal
-        dr=-dr;
-        dc=-dc;
-        novox= cobra->get_posx_cabeca()+dr;
-        novoy= cobra->get_posy_cabeca()+dc;
-    }
-    else{
-        //movimento normal
-        novox = cobra->get_posx_cabeca() + dr;
-        novoy = cobra->get_posy_cabeca() + dc;
-    }
-    //colisoes
-
-    int elemento=tela_atual->get(novoy,novox);
-    if(elemento==tela_atual->SNAKE){
-        if(novoy!=cobra->get_posy_cauda() || novox!=cobra->get_posx_cauda()) //andando em circulos?
-            return false; //derrota
-    }
-    if(elemento==tela_atual->WALL)
+    //calcula a nova posição da cabeça
+    int novoY = cabecaY + dr;
+    int novoX = cabecaX + dc;
+    
+    //colisões
+    int elemento = tela_atual->get(novoY, novoX);
+    
+    //colisão com a parede ou com a própria cobra (exceto a cauda que vai se mover pq pode ficar ciclica)
+    if (elemento == Screen::WALL) {
         return false; //derrota
-
-    //remove comida se tiver
-    bool eating=(elemento==tela_atual->FOOD);
-    if(eating){
-        removeComida(novoy,novox);
     }
-
-    //guarda posição da cauda ANTES de mover
-    int oldTailX = cobra->get_posx_cauda();
-    int oldTailY = cobra->get_posy_cauda();
-
-    //Apaga a cobra inteira da tela ANTES de mover
-    cobra->draw(*tela_atual, tela_atual->EMPTY);
-    // Move a cobra
-    cobra->move(dr, dc,eating);
-    // Desenha a nova posição
-    cobra->draw(*tela_atual, tela_atual->SNAKE);
     
+    if (elemento == Screen::SNAKE) {
+        // se colidir com uma parte que não é a cauda, ou se a cauda não vai se mover(se tiver comendo)
+        int caudaX = cobra->get_posx_cauda();
+        int caudaY = cobra->get_posy_cauda();
 
-    //verificar a validade das frutas!
-    for(int i=10-comidas_ativas;i<10;i++){
-        if(comidas[i][0]>0)  //evitar decrementar comidas que ja foram decrementadas
-            comidas[i][0]--;
-
-        if(comidas[i][0]==0){  //entao essa comida deve ser removida da tela
-
-            tela_atual->set(comidas[i][1],comidas[i][2],tela_atual->EMPTY);
+        if (novoX != caudaX || novoY != caudaY) {  //se estiver ciclico  
+            return false; //derrota
         }
     }
-    //limpar alimentos expirados
-    while (comidas_ativas > 0 && comidas[10 - comidas_ativas][0] == 0)
+    
+    //verifica se vai comer
+    bool eating = (elemento == Screen::FOOD);
+    if (eating) {
+        removeComida(novoY, novoX);
+    }
+    
+    //apaga a cobra da tela antes de movê-la (obj: fazer com que o rabo seja apagado caso a cobra nao esteja comendo)
+    cobra->draw(*tela_atual, Screen::EMPTY);
+    
+    //move a cobra
+    cobra->move(dr, dc, eating);
+    
+    //desenha a nova posição da cobra
+    cobra->draw(*tela_atual, Screen::SNAKE);
+    
+    //atualiza o tempo de vida das comidas
+    for (int i = 10 - comidas_ativas; i < 10; i++) {
+        if (comidas[i][0] >0) {
+            comidas[i][0]--;
+            
+            //se o tempo acabou, remove a comida da tela
+            if (comidas[i][0] == 0) {
+                tela_atual->set(comidas[i][1], comidas[i][2], Screen::EMPTY);
+            }
+        }
+    }
+    
+    //remove comidas expiradas
+    int pos = 10 - comidas_ativas;
+    while (comidas_ativas > 0 && pos < 10 && comidas[pos][0] == 0) {
+        pos++;
         comidas_ativas--;
+    }
     
     return true;
-
 }

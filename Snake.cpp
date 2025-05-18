@@ -43,12 +43,13 @@ void Snake::move(int dr,int dc,bool eating){
     if(cabeca == NULL) return;
 
     //registrar uma nova cabeca
-    Node *aux=new Node(cabeca->posX+dr,cabeca->posY+dc);
+    Node *aux=new Node(cabeca->posX+dc,cabeca->posY+dr);
 
     aux->prev=cabeca;
     cabeca->next=aux;
     cabeca=aux;
     
+    //se nao estiver comendo, deleta a calda
     if(!eating){
         //deletar a calda
         Node *antigo=calda;
