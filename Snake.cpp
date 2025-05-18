@@ -23,15 +23,12 @@ Snake::Snake(const int& n):cabeca(NULL), calda(NULL), snakeSize(0){
 }
 
 Snake::~Snake(){
-    Node* aux=cabeca;
-    while(aux!=NULL){
-        Node* prox=aux->next;
+    Node* aux = calda;
+    while (aux != NULL) {
+        Node* prox = aux->next;
         delete aux;
-        aux=prox;
-    }
-    cabeca=calda=NULL;
-    snakeSize=0;
-
+        aux = prox;
+}
 }
 
 void Snake::draw(Screen& s,int state){
