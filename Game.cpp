@@ -35,7 +35,7 @@ void Game::addFood(int dr, int dc,int ttl){
     }
 
     //armazenando iteracoes, posx e posy dentro do array de comidas
-    comidas[10-getNumFood()-1][0]=ttl+1;
+    comidas[10-getNumFood()-1][0]=ttl;
     comidas[10-getNumFood()-1][1]=dr;
     comidas[10-getNumFood()-1][2]= dc;
 
@@ -46,7 +46,7 @@ void Game::addFood(int dr, int dc,int ttl){
 void Game::removeComida(int x, int y) {
     //o objetivo é tornar o acesso ao array comidas o menos custoso possivel
     for (int i = 10 - comidas_ativas; i < 10; ++i) {
-        if (comidas[i][1] == x && comidas[i][2] == y) {
+        if (comidas[i][1] == x && comidas[i][2] == y && comidas[i][0]>-1) {
             //substitui pela última comida ativa
             comidas[i][0] = comidas[10 - comidas_ativas][0];
             comidas[i][1] = comidas[10 - comidas_ativas][1];
@@ -59,14 +59,38 @@ void Game::removeComida(int x, int y) {
 }
 
 bool Game::step(int dr, int dc) {
-    // Verifica se estamos tentando inverter a direção
+
+    // colocar essa verificacao de comidas no fim da funcao causa 
+    //erro na contagem de iteracoes. 
+
+    //atualiza o tempo de vida das comidas
+    for (int i = 10 - comidas_ativas; i < 10; i++) {
+        if (comidas[i][0] >-1) {
+            comidas[i][0]--;
+            
+            //se o tempo acabou, remove a comida da tela
+            if (comidas[i][0] == -1) {
+                tela_atual->set(comidas[i][1], comidas[i][2], Screen::EMPTY);
+            }
+        }
+    }
+    
+    //remove comidas expiradas
+    int pos = 10 - comidas_ativas;
+    while (comidas_ativas > 0 && comidas[pos][0] == -1) {
+        pos++;
+        comidas_ativas--;
+    }
+
+
+    //verifica se estamos tentando inverter a direção
     int prevX = cobra->get_posx_prev_cabeca();
     int prevY = cobra->get_posy_prev_cabeca();
     int cabecaX = cobra->get_posx_cabeca();
     int cabecaY = cobra->get_posy_cabeca();
     
     //se estamos tentando ir na direção oposta/invalida, ignoramos
-    if (dr == -1 * (cabecaY - prevY) && dc == -1 * (cabecaX - prevX)) {
+    if (dr == -(cabecaY - prevY) && dc == -(cabecaX - prevX)) {
         //segue direção atual
         dr = cabecaY - prevY;
         dc = cabecaX - prevX;
@@ -89,7 +113,7 @@ bool Game::step(int dr, int dc) {
         int caudaX = cobra->get_posx_cauda();
         int caudaY = cobra->get_posy_cauda();
 
-        if (novoX != caudaX || novoY != caudaY) {  //se estiver ciclico  
+        if (novoX != caudaX || novoY != caudaY|| elemento == Screen::FOOD) {  //se estiver ciclico  
             return false; //derrota
         }
     }
@@ -109,24 +133,7 @@ bool Game::step(int dr, int dc) {
     //desenha a nova posição da cobra
     cobra->draw(*tela_atual, Screen::SNAKE);
     
-    //atualiza o tempo de vida das comidas
-    for (int i = 10 - comidas_ativas; i < 10; i++) {
-        if (comidas[i][0] >0) {
-            comidas[i][0]--;
-            
-            //se o tempo acabou, remove a comida da tela
-            if (comidas[i][0] == 0) {
-                tela_atual->set(comidas[i][1], comidas[i][2], Screen::EMPTY);
-            }
-        }
-    }
     
-    //remove comidas expiradas
-    int pos = 10 - comidas_ativas;
-    while (comidas_ativas > 0 && pos < 10 && comidas[pos][0] == 0) {
-        pos++;
-        comidas_ativas--;
-    }
     
     return true;
 }

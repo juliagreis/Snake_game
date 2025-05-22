@@ -14,7 +14,7 @@ class Screen{
     public:
         const static int FOOD=0, SNAKE=1, EMPTY=2, WALL=-1;
 
-        Screen(int alt,int larg);
+        Screen(const int alt,const int larg);
         ~Screen();   
 
         int getWidth() const {return largura;};

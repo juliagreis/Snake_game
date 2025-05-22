@@ -31,7 +31,7 @@ Snake::~Snake(){
 }
 }
 
-void Snake::draw(Screen& s,int state){
+void Snake::draw(Screen& s, int const state){
     Node* aux=calda;
     while(aux!=NULL){
         s.set(aux->posY,aux->posX,state);

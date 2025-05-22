@@ -6,10 +6,9 @@
 
 class Game{
     private:
-        Snake *cobra;
+        Snake *cobra;       //cobra composta por nodes
         Screen *tela_atual;  //estado atual da tela do jogo
-        int **comidas;   //talvez nao seja int
-        //quanto mais recente for a comida, mais ao inicio do vetor ela se encontra
+        int **comidas;      //array de comida
         int comidas_ativas;
     public:
         Game(int alt,int larg,int tamanho_cobra);

@@ -9,7 +9,7 @@
 class Snake{
     
     private:
-        //------node-------//
+        //------node-------// 
         class Node{
             public:
                 Node* prev;
@@ -24,23 +24,23 @@ class Snake{
         Node* calda;    //fim
         Node* cabeca;    //cabeca
         int snakeSize;
-        void crescer(int x,int y);   //talvez preciso verificar se esta dentro do intervalo
 
     public:
         Snake(const int& n);
         ~Snake();
-        void draw(Screen& s,int state);
+        void draw(Screen& s,const int state);
         void move(int dr, int dc, bool eating);
-        int getLength(){return snakeSize;};
+        int getLength()const{return snakeSize;};
 
-        int get_posx_cabeca(){return cabeca->posX;};
-        int get_posy_cabeca(){return cabeca->posY;};
+        //funcoes auxiliares
+        int get_posx_cabeca()const {return cabeca->posX;};
+        int get_posy_cabeca() const{return cabeca->posY;};
 
         int get_posx_cauda() const { return calda->posX; }  
         int get_posy_cauda() const { return calda->posY; }  
 
-        int get_posx_prev_cabeca(){return cabeca->prev ? cabeca->prev->posX : cabeca->posX;};
-        int get_posy_prev_cabeca(){return cabeca->prev ? cabeca->prev->posY : cabeca->posY;};
+        int get_posx_prev_cabeca()const{return cabeca->prev ? cabeca->prev->posX : cabeca->posX;};
+        int get_posy_prev_cabeca()const{return cabeca->prev ? cabeca->prev->posY : cabeca->posY;};
 };
 
 #endif
